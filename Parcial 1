@@ -1,0 +1,171 @@
+CREATE DATABASE InformacionBibliografica
+
+USE InformacionBibliografica
+
+-- Crear la tabla TIPOPUBLICACION
+CREATE TABLE TipoPublicacion (
+    Id INT IDENTITY NOT NULL,
+    CONSTRAINT pk_TipoPublicacion_Id PRIMARY KEY(Id),
+    NombreTipo VARCHAR(50) NOT NULL
+)
+
+-- Crear los índices de la tabla TIPOPUBLICACION
+CREATE UNIQUE INDEX ix_TipoPublicacion_NombreTipo
+    ON TipoPublicacion(NombreTipo)
+
+-- Crear la tabla AUTOR
+CREATE TABLE Autor (
+    Id INT IDENTITY NOT NULL,
+    CONSTRAINT pk_Autor_IdAutor PRIMARY KEY(Id),
+    TipoAutor VARCHAR(20) NOT NULL
+)
+
+-- Crear los índices de la tabla AUTOR
+CREATE UNIQUE INDEX ix_Autor_TipoAutor
+    ON Autor(TipoAutor)
+
+
+-- Crear la tabla AUTORPERSONA
+CREATE TABLE AutorPersona (
+    Id INT IDENTITY NOT NULL,
+    CONSTRAINT pk_AutorPersona_Id PRIMARY KEY(Id),
+    IdAutor INT NOT NULL,
+    Nombre VARCHAR(100) NOT NULL,
+    Apellido VARCHAR(100) NOT NULL,
+    CONSTRAINT fk_AutorPersona_IdAutor FOREIGN KEY(IdAutor) REFERENCES Autor(Id)
+)
+
+-- Crear los índices de la tabla AUTORPERSONA
+CREATE UNIQUE INDEX ix_AutorPersona_NombreApellido
+    ON AutorPersona(Nombre, Apellido)
+
+
+
+
+-- Crear la tabla AUTORCORPORATIVO
+CREATE TABLE AutorCorporativo (
+    Id INT IDENTITY NOT NULL,
+    CONSTRAINT pk_AutorCorporativo_Id PRIMARY KEY(Id),
+    IdAutor INT NOT NULL,
+    NombreCorporativo VARCHAR(150) NOT NULL,
+    CONSTRAINT fk_AutorCorporativo_IdAutor FOREIGN KEY(IdAutor) REFERENCES Autor(Id)
+)
+
+-- Crear los índices de la tabla AUTORCORPORATIVO
+CREATE UNIQUE INDEX ix_AutorCorporativo_NombreCorporativo
+    ON AutorCorporativo(NombreCorporativo)
+
+
+
+
+-- Crear la tabla UBICACION
+CREATE TABLE Ubicacion (
+    Id INT IDENTITY NOT NULL,
+    CONSTRAINT pk_Ubicacion_Id PRIMARY KEY(Id),
+    Pais VARCHAR(100) NOT NULL,
+    Ciudad VARCHAR(100) NOT NULL
+)
+
+-- Crear los índices de la tabla UBICACION
+CREATE UNIQUE INDEX ix_Ubicacion_PaisCiudad
+    ON Ubicacion(Pais, Ciudad)
+
+
+-- Crear la tabla EDITORIAL
+CREATE TABLE Editorial (
+    Id INT IDENTITY NOT NULL,
+    CONSTRAINT pk_Editorial_Id PRIMARY KEY(Id),
+    NombreEditorial VARCHAR(100) NOT NULL,
+    IdUbicacion INT NOT NULL,
+    CONSTRAINT fk_Editorial_IdUbicacion FOREIGN KEY(IdUbicacion) REFERENCES Ubicacion(Id)
+)
+
+-- Crear los índices de la tabla EDITORIAL
+CREATE UNIQUE INDEX ix_Editorial_NombreUbicacion
+    ON Editorial(IdUbicacion, NombreEditorial)
+
+
+
+-- Crear la tabla DESCRIPTOR
+CREATE TABLE Descriptor (
+    Id INT IDENTITY NOT NULL,
+    CONSTRAINT pk_Descriptor_Id PRIMARY KEY(Id),
+    NombreDescriptor VARCHAR(100) NOT NULL
+)
+
+-- Crear los índices de la tabla DESCRIPTOR
+CREATE UNIQUE INDEX ix_Descriptor_NombreDescriptor
+    ON Descriptor(NombreDescriptor)
+
+
+
+-- Crear la tabla PUBLICACION
+CREATE TABLE Publicacion (
+    Id INT IDENTITY NOT NULL,
+    CONSTRAINT pk_Publicacion_Id PRIMARY KEY(Id),
+    Titulo VARCHAR(255) NOT NULL,
+    AnioPublicacion INT NOT NULL,
+    IdTipoPublicacion INT NOT NULL,
+    IdEditorial INT NOT NULL,
+    CONSTRAINT fk_Publicacion_IdTipoPublicacion FOREIGN KEY(IdTipoPublicacion) REFERENCES TipoPublicacion(Id),
+    CONSTRAINT fk_Publicacion_IdEditorial FOREIGN KEY(IdEditorial) REFERENCES Editorial(Id)
+)
+
+-- Crear los índices de la tabla PUBLICACION
+CREATE UNIQUE INDEX ix_Publicacion_Titulo
+    ON Publicacion(IdTipoPublicacion, Titulo)
+
+
+
+
+
+-- Crear la tabla PUBLICACIONAUTOR
+CREATE TABLE PublicacionAutor (
+    IdPublicacion INT NOT NULL,
+    IdAutor INT NOT NULL,
+    CONSTRAINT pk_PublicacionAutor PRIMARY KEY(IdPublicacion, IdAutor),
+    CONSTRAINT fk_PublicacionAutor_IdPublicacion FOREIGN KEY(IdPublicacion) REFERENCES Publicacion(Id),
+    CONSTRAINT fk_PublicacionAutor_IdAutor FOREIGN KEY(IdAutor) REFERENCES Autor(Id)
+)
+
+-- Crear los índices de la tabla PUBLICACIONAUTOR
+CREATE INDEX ix_PublicacionAutor_IdAutor
+    ON PublicacionAutor(IdAutor)
+
+CREATE INDEX ix_PublicacionAutor_IdPublicacion
+    ON PublicacionAutor(IdPublicacion)
+
+
+
+-- Crear la tabla SERIE
+CREATE TABLE Serie (
+    Id INT IDENTITY NOT NULL,
+    CONSTRAINT pk_Serie_Id PRIMARY KEY(Id),
+    IdPublicacion INT NOT NULL,
+    Volumen INT NOT NULL,
+    Numero INT NOT NULL,
+    Fecha DATE NOT NULL,
+    CONSTRAINT fk_Serie_IdPublicacion FOREIGN KEY(IdPublicacion) REFERENCES Publicacion(Id)
+)
+
+-- Crear los índices de la tabla SERIE
+CREATE UNIQUE INDEX ix_Serie_VolumenNumero
+    ON Serie(IdPublicacion, Volumen, Numero)
+
+
+
+-- Crear la tabla PUBLICACIONDESCRIPTOR
+CREATE TABLE PublicacionDescriptor (
+    IdPublicacion INT NOT NULL,
+    IdDescriptor INT NOT NULL,
+    CONSTRAINT pk_PublicacionDescriptor PRIMARY KEY(IdPublicacion, IdDescriptor),
+    CONSTRAINT fk_PublicacionDescriptor_IdPublicacion FOREIGN KEY(IdPublicacion) REFERENCES Publicacion(Id),
+    CONSTRAINT fk_PublicacionDescriptor_IdDescriptor FOREIGN KEY(IdDescriptor) REFERENCES Descriptor(Id)
+)
+
+-- Crear los índices de la tabla PUBLICACIONDESCRIPTOR
+CREATE INDEX ix_PublicacionDescriptor_IdPublicacion
+    ON PublicacionDescriptor(IdPublicacion)
+
+CREATE INDEX ix_PublicacionDescriptor_IdDescriptor
+    ON PublicacionDescriptor(IdDescriptor)
